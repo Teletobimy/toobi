@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:test01/screens/main_screen2.dart';
+import 'package:test01/screens/main_screen.dart';
 import 'package:test01/screens/myprofilepages/profile_pages/main_profile_page1.dart';
 import 'package:test01/screens/myprofilepages/profile_pages/main_profile_page2.dart';
 import 'package:test01/screens/myprofilepages/profile_pages/main_profile_page3.dart';
@@ -18,35 +18,35 @@ class _CalendarState extends State<MyprofilePageController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 40,
-        title: const Text("📚독서 한잔, 커피 한잔☕ "),
-        centerTitle: true,
-        // backgroundColor: TitleColor1,
-        leading: Builder(
-            builder: (BuildContext context) => IconButton(
-                tooltip: "북쉐어링",
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
-                icon: const Icon(Icons.menu_book_sharp))),
-        actions: [
-          IconButton(
-            onPressed: () => Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const MainScreen2(),
-              ),
-              (route) => false,
-            ),
-            icon: const Icon(Icons.home),
-            style: ButtonStyle(iconSize: MaterialStateProperty.all(30)),
-          ),
-          const SizedBox(
-            width: 13,
-          )
-        ],
-      ),
+      // appBar: AppBar(
+      //   toolbarHeight: 40,
+      //   title: const Text("📚독서 한잔, 커피 한잔☕ "),
+      //   centerTitle: true,
+      //   // backgroundColor: TitleColor1,
+      //   leading: Builder(
+      //       builder: (BuildContext context) => IconButton(
+      //           tooltip: "북쉐어링",
+      //           onPressed: () {
+      //             Scaffold.of(context).openDrawer();
+      //           },
+      //           icon: const Icon(Icons.menu_book_sharp))),
+      //   actions: [
+      //     IconButton(
+      //       onPressed: () => Navigator.pushAndRemoveUntil(
+      //         context,
+      //         MaterialPageRoute(
+      //           builder: (context) => const MainScreen2(),
+      //         ),
+      //         (route) => false,
+      //       ),
+      //       icon: const Icon(Icons.home),
+      //       style: ButtonStyle(iconSize: MaterialStateProperty.all(30)),
+      //     ),
+      //     const SizedBox(
+      //       width: 13,
+      //     )
+      //   ],
+      // ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,

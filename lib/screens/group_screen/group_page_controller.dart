@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:test01/screens/group_screen/group_screens/chat_screen/screens/chat_screen.dart';
 import 'package:test01/screens/group_screen/group_screens/group_page_calendar.dart';
 import 'package:test01/screens/group_screen/group_screens/group_page_main.dart';
-import 'package:test01/screens/main_screen2.dart';
+import 'package:test01/screens/main_screen.dart';
 import 'package:test01/screens/setting/colors.dart';
 
 class GroupPageControll extends StatefulWidget {
@@ -18,36 +18,36 @@ class _CalendarState extends State<GroupPageControll> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: PRIMATY_COLOR,
-        toolbarHeight: 40,
-        title: const Text("📚독서 한잔, 커피 한잔☕ "),
-        centerTitle: true,
-        // backgroundColor: TitleColor1,
-        leading: Builder(
-            builder: (BuildContext context) => IconButton(
-                tooltip: "북쉐어링",
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
-                icon: const Icon(Icons.menu_book_sharp))),
-        actions: [
-          IconButton(
-            onPressed: () => Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const MainScreen2(),
-              ),
-              (route) => false,
-            ),
-            icon: const Icon(Icons.home),
-            style: ButtonStyle(iconSize: MaterialStateProperty.all(30)),
-          ),
-          const SizedBox(
-            width: 13,
-          )
-        ],
-      ),
+      // appBar: AppBar(
+      //   backgroundColor: PRIMATY_COLOR,
+      //   toolbarHeight: 40,
+      //   title: const Text("📚독서 한잔, 커피 한잔☕ "),
+      //   centerTitle: true,
+      //   // backgroundColor: TitleColor1,
+      //   leading: Builder(
+      //       builder: (BuildContext context) => IconButton(
+      //           tooltip: "북쉐어링",
+      //           onPressed: () {
+      //             Scaffold.of(context).openDrawer();
+      //           },
+      //           icon: const Icon(Icons.menu_book_sharp))),
+      //   actions: [
+      //     IconButton(
+      //       onPressed: () => Navigator.pushAndRemoveUntil(
+      //         context,
+      //         MaterialPageRoute(
+      //           builder: (context) => const MainScreen2(),
+      //         ),
+      //         (route) => false,
+      //       ),
+      //       icon: const Icon(Icons.home),
+      //       style: ButtonStyle(iconSize: MaterialStateProperty.all(30)),
+      //     ),
+      //     const SizedBox(
+      //       width: 13,
+      //     )
+      //   ],
+      // ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
