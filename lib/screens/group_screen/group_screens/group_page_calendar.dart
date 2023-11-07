@@ -1,7 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:test01/screens/group_screen/group_screens/chat_screen/chatting/chat/chat_bubble.dart';
 import 'package:test01/screens/setting/colors.dart';
 import '../../setting/setting.dart';
+import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
 
 class GroupCalander extends StatefulWidget {
   const GroupCalander({super.key});
@@ -18,12 +22,14 @@ class _GroupCalanderState extends State<GroupCalander> {
 
   late final ValueNotifier<List<Event>> _selectedEvents;
   var cnt = 0;
+  final user = FirebaseAuth.instance.currentUser;
 
   @override
   void initState() {
     super.initState();
     _selectedDay = _focusedDay;
     _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
+    print(user);
   }
 
   @override
@@ -62,37 +68,47 @@ class _GroupCalanderState extends State<GroupCalander> {
             onPageChanged: (focusedDay) {
               _focusedDay = focusedDay;
             },
-            onDayLongPressed: (selectedDay, focusedDay) => showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    scrollable: true,
-                    title: const Text("모임생성"),
-                    content: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: TextField(
-                        controller: eventController,
-                      ),
-                    ),
-                    actions: [
-                      TextButton.icon(
-                          onPressed: () {
-                            events.addAll({
-                              selectedDay: [Event(eventController.text)]
-                            });
+            onDayLongPressed: (selectedDay, focusedDay) async
+                // => showDialog(
+                //     context: context,
+                //     builder: (context)
+                {
+              return await showModalBottomSheet(
+                  context: context,
+                  isDismissible: true,
+                  builder: (context) => AddBottomSheet(
+                        focusedDay: focusedDay,
+                        selectedDay: selectedDay,
+                      ));
+              // AlertDialog(
+              //   scrollable: true,
+              //   title: const Text("모임생성"),
+              //   content: Padding(
+              //     padding: const EdgeInsets.all(8),
+              //     child: TextField(
+              //       controller: eventController,
+              //     ),
+              //   ),
+              //   actions: [
+              //     TextButton.icon(
+              //         onPressed: () {
+              //           events.addAll({
+              //             selectedDay: [Event(eventController.text)]
+              //           });
 
-                            _selectedEvents.value =
-                                _getEventsForDay(_selectedDay!);
-                            Navigator.of(context).pop();
-                            print("이벤트 :$events");
-                            print("셀렉티드이벤츠 :$_selectedEvents");
-                            print("셀렉티드이벤츠벨류 : ${_selectedEvents.value}");
-                          },
-                          icon: const Icon(Icons.add),
-                          label: const Text("정모생성"))
-                    ],
-                  );
-                }),
+              //           _selectedEvents.value =
+              //               _getEventsForDay(_selectedDay!);
+              //           Navigator.of(context).pop();
+              //           print("이벤트 :$events");
+              //           print("셀렉티드이벤츠 :$_selectedEvents");
+              //           print("셀렉티드이벤츠벨류 : ${_selectedEvents.value}");
+              //         },
+              //         icon: const Icon(Icons.add),
+              //         label: const Text("정모생성"))
+              //   ],
+              // );
+            },
+            // ),
 
             calendarStyle: const CalendarStyle(
               outsideDaysVisible: true,
@@ -115,26 +131,64 @@ class _GroupCalanderState extends State<GroupCalander> {
           //           )),
           // )
           Expanded(
-            child: ValueListenableBuilder<List<Event>>(
-                valueListenable: _selectedEvents,
-                builder: (context, value, _) {
-                  return ListView.builder(
-                      itemCount: value.length,
-                      itemBuilder: (context, index) {
-                        return Container(
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                            border: Border.all(width: 1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: ListTile(
-                            onTap: () => print(""),
-                            title: Text('${value[index]}'),
-                          ),
-                        );
-                      });
-                }),
+            child: StreamBuilder(
+              stream: FirebaseFirestore.instance
+                  .collection('Callendar')
+                  // .orderBy('time', descending: true)
+                  .snapshots(),
+              builder: (context,
+                  AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: LinearProgressIndicator(),
+                  );
+                }
+                final chatDocs = snapshot.data!.docs;
+                return ListView.builder(
+                  reverse: true,
+                  itemCount: chatDocs.length,
+                  itemBuilder: (context, index) {
+                    return ScheduleCard(
+                      chatDocs[index]['startTime'],
+                      chatDocs[index]['endTime'],
+                      chatDocs[index]['content'],
+                      chatDocs[index]['index'],
+                    );
+                    // final int startTime;
+                    // final int endTime;
+                    // final String content;
+                    // final int index;
+
+                    // ChatBubbles(
+                    //     chatDocs[index]['text'],
+                    //     chatDocs[index]['userID'].toString() == user!.uid,
+                    //     chatDocs[index]['userName'],
+                    //     chatDocs[index]['userImage']);
+                  },
+                );
+              },
+            ),
+
+            // child: ValueListenableBuilder<List<Event>>(
+            //     valueListenable: _selectedEvents,
+            //     builder: (context, value, _) {
+            //       return ListView.builder(
+            //           itemCount: value.length,
+            //           itemBuilder: (context, index) {
+            //             return Container(
+            //               margin: const EdgeInsets.symmetric(
+            //                   horizontal: 12, vertical: 4),
+            //               decoration: BoxDecoration(
+            //                 border: Border.all(width: 1),
+            //                 borderRadius: BorderRadius.circular(12),
+            //               ),
+            //               child: ListTile(
+            //                 onTap: () => print(""),
+            //                 title: Text('${value[index]}'),
+            //               ),
+            //             );
+            //           });
+            //     }),
           )
         ],
       ),
@@ -143,17 +197,14 @@ class _GroupCalanderState extends State<GroupCalander> {
 }
 
 class ScheduleCard extends StatelessWidget {
+  const ScheduleCard(this.startTime, this.endTime, this.content, this.index,
+      {Key? key})
+      : super(key: key);
+
   final int startTime;
   final int endTime;
   final String content;
   final int index;
-
-  const ScheduleCard(
-      {super.key,
-      required this.startTime,
-      required this.endTime,
-      required this.content,
-      required this.index});
 
   @override
   Widget build(BuildContext context) {
@@ -298,6 +349,7 @@ class _Time extends StatelessWidget {
 
 class _Content extends StatelessWidget {
   final String content;
+
   const _Content({required this.content});
 
   @override
@@ -305,6 +357,43 @@ class _Content extends StatelessWidget {
     return Expanded(
         child: Text(
       content,
+    ));
+  }
+}
+
+class AddBottomSheet extends StatefulWidget {
+  DateTime? selectedDay;
+  DateTime? focusedDay;
+  AddBottomSheet({super.key, this.selectedDay, this.focusedDay});
+
+  @override
+  State<AddBottomSheet> createState() => _AddBottomSheetState();
+}
+
+class _AddBottomSheetState extends State<AddBottomSheet> {
+  final _controller = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    String newDAY = widget.selectedDay.toString();
+
+    return SafeArea(
+        child: Container(
+      height: MediaQuery.of(context).size.height / 2,
+      decoration: BoxDecoration(color: Colors.blue[100]),
+      child: Column(
+        children: [
+          Text('${widget.selectedDay}'),
+          Text('${widget.focusedDay}'),
+          Text(newDAY),
+          TextField(
+            decoration: InputDecoration(
+              labelText: "labelText : ${widget.selectedDay}",
+              hintText: "hintText : ${widget.focusedDay}",
+            ),
+          ),
+        ],
+      ),
     ));
   }
 }

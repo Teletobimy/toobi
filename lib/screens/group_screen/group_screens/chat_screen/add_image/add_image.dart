@@ -3,6 +3,7 @@ import 'dart:io';
 //cliper 적용예정
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mime/mime.dart';
 
 class AddImage extends StatefulWidget {
   const AddImage(this.addImageFunc, {Key? key}) : super(key: key);
@@ -13,22 +14,31 @@ class AddImage extends StatefulWidget {
   State<AddImage> createState() => _AddImageState();
 }
 
-File? pickedImage;
+// File file = getFile();
 
 class _AddImageState extends State<AddImage> {
-  void _pickImage() async {
+  File? pickedImage;
+  Future _pickImage() async {
     final imagePicker = ImagePicker();
-    final pickedImageFile = await imagePicker.pickImage(
+    // final LostDataResponse response = await imagePicker.retrieveLostData();
+
+    var pickedImageFile = await imagePicker.pickImage(
       source: ImageSource.gallery,
       imageQuality: 50,
       maxHeight: 150,
     );
-    setState(() {
-      if (pickedImageFile != null) {
+    if (pickedImageFile != null) {
+      setState(() {
+        // if (pickedImageFile != null) {
+        //   pickedImage = File(pickedImageFile.path);
+        // }
+        // else {
+
         pickedImage = File(pickedImageFile.path);
-      }
-    });
-    widget.addImageFunc(pickedImage!);
+        widget.addImageFunc(pickedImage!);
+        // }
+      });
+    }
   }
 
   @override

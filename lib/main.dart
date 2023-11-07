@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:test01/screens/main_screen.dart';
+import 'package:test01/screens/login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:test01/screens/main_screen2.dart';
+import 'package:test01/screens/main_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,7 +21,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "CellMoim",
+      title: "독서 한잔,커피 한잔",
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),

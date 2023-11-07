@@ -1,711 +1,706 @@
-import 'dart:io';
-
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:test01/screens/group_screen/group_screens/chat_screen/add_image/add_image.dart';
-import 'package:test01/screens/group_screen/group_screens/chat_screen/config/palette.dart';
-import 'package:test01/screens/main_screen2.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:test01/screens/group_screen/group_page_controller.dart';
+import 'package:test01/screens/login_screen.dart';
+import 'package:test01/screens/myprofilepages/myprofile_page_controller.dart';
 import 'package:test01/screens/setting/colors.dart';
+import 'package:test01/temp_screen.dart';
 
-class LoginSingUpScreen extends StatefulWidget {
-  const LoginSingUpScreen({super.key});
+class MainScreen2 extends StatefulWidget {
+  const MainScreen2({super.key});
 
   @override
-  State<LoginSingUpScreen> createState() => _LoginSingUpScreenState();
+  State<MainScreen2> createState() => _MainScreen2State();
 }
 
-class _LoginSingUpScreenState extends State<LoginSingUpScreen> {
+// int _selectedIndex = 0;
+
+class _MainScreen2State extends State<MainScreen2> {
   final _authentication = FirebaseAuth.instance;
 
-  bool isSignupScreen = true;
-  bool showSpinner = false;
-  final _formKey = GlobalKey<FormState>();
+  User? loggedUser;
+  int _selectedIndex = 0;
 
-  String userName = "";
-  String userEmail = "";
-  String userPassword = "";
-  File? userPickedImage;
-
-  void pickedImage(File image) {
-    userPickedImage = image;
+  // void _onItemTapped(int index) {
+  //   setState(() {
+  //     _selectedIndex = index;
+  //   });
+  // }
+  @override
+  void initState() {
+    super.initState();
+    getCurrentUser();
   }
 
-  void showAlert(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (context) {
-          return Dialog(
-            backgroundColor: Colors.white,
-            child: AddImage(pickedImage),
-          );
-        });
-  }
-
-  void _tryValidation() {
-    final isValid = _formKey.currentState!.validate();
-    if (isValid) {
-      _formKey.currentState!.save();
+  void getCurrentUser() {
+    try {
+      final user = _authentication.currentUser;
+      if (user != null) {
+        loggedUser = user;
+        print("로그인 유저 정보 !! : $loggedUser");
+        if (kDebugMode) {
+          print(loggedUser!.email);
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Palette.backgroundColor,
-      body: ModalProgressHUD(
-        inAsyncCall: showSpinner,
-        child: GestureDetector(
-          onTap: () {
-            FocusScope.of(context).unfocus();
+      appBar: AppBar(
+        // backgroundColor: Colors.grey[400],
+        toolbarHeight: 32,
+        title: const Text("📚독서 한잔, 커피 한잔☕ "),
+        centerTitle: true,
+        backgroundColor: PRIMATY_COLOR,
+        leading: Builder(
+            builder: (BuildContext context) => IconButton(
+                tooltip: "메뉴",
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+                icon: const Icon(Icons.menu))),
+        // actions: [
+        //   TextButton(
+        //     onPressed: () {
+        //       Navigator.push(context, MaterialPageRoute(builder: (context) {
+        //         return Test1();
+        //       }));
+        //     },
+        //     child: Text("action button"),
+        //   ),
+        //   SizedBox(
+        //     width: 14,
+        //   )
+        // ],
+      ),
+      //Drawer part
+      drawer: Drawer(
+        width: MediaQuery.of(context).size.width / 3,
+        child: NavigationRail(
+          destinations: <NavigationRailDestination>[
+            NavigationRailDestination(
+              icon: Icon(Icons.house_outlined),
+              selectedIcon: Icon(Icons.house),
+              label: Text("Home"),
+            ),
+            NavigationRailDestination(
+              icon: Icon(Icons.house_outlined),
+              selectedIcon: Icon(Icons.house),
+              label: Text("그룹"),
+            ),
+            NavigationRailDestination(
+              icon: Icon(Icons.house_outlined),
+              selectedIcon: Icon(Icons.house),
+              label: Text("채팅"),
+            ),
+            NavigationRailDestination(
+              icon: Icon(Icons.house_outlined),
+              selectedIcon: Icon(Icons.house),
+              label: Text("프로필"),
+            ),
+          ],
+          selectedIndex: _selectedIndex,
+          onDestinationSelected: (int index) {
+            setState(() {
+              _selectedIndex = index;
+            });
           },
-          child: Stack(
-            children: [
-              Container(
-                height: 300,
-                decoration: const BoxDecoration(color: PRIMATY_COLOR
-                    // image: DecorationImage(
-                    //   image: AssetImage("assets/talk2.jpg"),
-                    //   fit: BoxFit.cover,
-                    // ),
-                    ),
+          useIndicator: true,
+          labelType: NavigationRailLabelType.all,
+          selectedLabelTextStyle: TextStyle(color: Colors.lightBlue[500]),
+          unselectedLabelTextStyle: TextStyle(color: Colors.grey[500]),
+          backgroundColor: Colors.grey[50],
+          indicatorColor: Colors.cyan[50],
+          minWidth: 40,
+          leading: Container(
+            width: 30,
+            height: 40,
+            color: Colors.red,
+          ),
+          trailing: GestureDetector(
+            onTap: () {
+              _authentication.signOut();
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => LoginSingUpScreen()));
+            },
+            child: const Padding(
+              padding: EdgeInsets.only(
+                left: 12,
+                top: 8,
+                bottom: 8,
               ),
-              //전체 하얀 포지션 옮기기
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.easeIn,
-                top: 180,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeIn,
-                  padding: const EdgeInsets.all(
-                    20,
+              child: Column(
+                children: [
+                  Icon(Icons.logout),
+                  SizedBox(
+                    width: 10,
                   ),
-                  height: isSignupScreen ? 280.0 : 230.0,
-                  width: MediaQuery.of(context).size.width - 40,
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 20,
+                  Text("로그아웃 3"),
+                ],
+              ),
+            ),
+          ),
+        ),
+        // ListView(
+        //   padding: EdgeInsets.zero,
+        //   children: <Widget>[
+        //     const DrawerHeader(
+        //       decoration: BoxDecoration(
+        //         color: PRIMATY_COLOR,
+        //       ),
+        //       child: Text(
+        //         '메뉴 모음',
+        //         style: TextStyle(
+        //           color: Colors.white,
+        //           fontSize: 24,
+        //         ),
+        //       ),
+        //     ),
+        //     //Draw 버튼 1
+        //     GestureDetector(
+        //       onTap: () {
+        //         Navigator.push(
+        //           context,
+        //           MaterialPageRoute(
+        //             builder: (context) => const MyprofilePageController(),
+        //           ),
+        //         );
+        //       },
+        //       child: const Padding(
+        //         padding: EdgeInsets.only(
+        //           left: 12,
+        //           top: 8,
+        //           bottom: 8,
+        //         ),
+        //         child: Row(
+        //           children: [
+        //             Icon(Icons.person),
+        //             SizedBox(
+        //               width: 10,
+        //             ),
+        //             Text("버튼 1"),
+        //           ],
+        //         ),
+        //       ),
+        //     ),
+        //     // Draw 버튼 2
+        //     GestureDetector(
+        //       onTap: () {
+        //         Navigator.push(
+        //           context,
+        //           MaterialPageRoute(
+        //             builder: (context) => const MyprofilePageController(),
+        //           ),
+        //         );
+        //       },
+        //       child: const Padding(
+        //         padding: EdgeInsets.only(
+        //           left: 12,
+        //           top: 8,
+        //           bottom: 8,
+        //         ),
+        //         child: Row(
+        //           children: [
+        //             Icon(Icons.person),
+        //             SizedBox(
+        //               width: 10,
+        //             ),
+        //             Text("버튼 2"),
+        //           ],
+        //         ),
+        //       ),
+        //     ),
+        //     //버튼 3
+        //     GestureDetector(
+        //       onTap: () {
+        //         Navigator.push(
+        //           context,
+        //           MaterialPageRoute(
+        //             builder: (context) => const MyprofilePageController(),
+        //           ),
+        //         );
+        //       },
+        //       child: const Padding(
+        //         padding: EdgeInsets.only(
+        //           left: 12,
+        //           top: 8,
+        //           bottom: 8,
+        //         ),
+        //         child: Row(
+        //           children: [
+        //             Icon(Icons.person),
+        //             SizedBox(
+        //               width: 10,
+        //             ),
+        //             Text("버튼 3"),
+        //           ],
+        //         ),
+        //       ),
+        //     ),
+        //     GestureDetector(
+        //       onTap: () {
+        //         _authentication.signOut();
+        //         Navigator.push(
+        //             context,
+        //             MaterialPageRoute(
+        //                 builder: (context) => LoginSingUpScreen()));
+        //       },
+        //       child: const Padding(
+        //         padding: EdgeInsets.only(
+        //           left: 12,
+        //           top: 8,
+        //           bottom: 8,
+        //         ),
+        //         child: Row(
+        //           children: [
+        //             Icon(Icons.logout),
+        //             SizedBox(
+        //               width: 10,
+        //             ),
+        //             Text("로그아웃 3"),
+        //           ],
+        //         ),
+        //       ),
+        //     ),
+        //   ],
+        // ),
+      ),
+      body: _widgetList.elementAt(_selectedIndex),
+      // bottomNavigationBar: Row(
+      //   children: [
+      //     NavigationRail(
+      //       destinations: <NavigationRailDestination>[
+      //         NavigationRailDestination(
+      //           icon: Icon(Icons.house_outlined),
+      //           selectedIcon: Icon(Icons.house),
+      //           label: Text("Home"),
+      //         ),
+      //         NavigationRailDestination(
+      //           icon: Icon(Icons.house_outlined),
+      //           selectedIcon: Icon(Icons.house),
+      //           label: Text("Home"),
+      //         ),
+      //         NavigationRailDestination(
+      //           icon: Icon(Icons.house_outlined),
+      //           selectedIcon: Icon(Icons.house),
+      //           label: Text("Home"),
+      //         ),
+      //       ],
+      //       selectedIndex: _selectedIndex,
+      //       onDestinationSelected: (int index) {
+      //         setState(() {
+      //           _selectedIndex = index;
+      //         });
+      //       },
+      //       useIndicator: true,
+      //       labelType: NavigationRailLabelType.all,
+      //       selectedLabelTextStyle: TextStyle(color: Colors.lightBlue[500]),
+      //       unselectedLabelTextStyle: TextStyle(color: Colors.grey[500]),
+      //       backgroundColor: Colors.grey[50],
+      //       indicatorColor: Colors.cyan[50],
+      //       minWidth: 100,
+      //       leading: Container(
+      //         width: 80,
+      //         height: 80,
+      //         color: Colors.red,
+      //       ),
+      //       trailing: Container(
+      //         width: 80,
+      //         height: 80,
+      //         color: Colors.blue,
+      //       ),
+      //     ),
+      //   ],
+      // )
+      // BottomAppBar(
+      //   height: 69,
+      //   child: Row(
+      //     children: [
+      //       //하단 버튼 1
+      //       Expanded(
+      //         child: GestureDetector(
+      //           onTap: () {
+      //             Navigator.pushAndRemoveUntil(
+      //               context,
+      //               MaterialPageRoute(
+      //                 builder: (context) => const MainScreen2(),
+      //               ),
+      //               (route) => false,
+      //             );
+      //           },
+      //           child: const Column(
+      //             children: [Icon(Icons.home), Text("홈")],
+      //           ),
+      //         ),
+      //       ),
+      //       Container(
+      //         height: double.infinity,
+      //         width: 2,
+      //         color: Colors.grey,
+      //       ),
+      //       //하단 버튼 2
+      //       Expanded(
+      //         child: GestureDetector(
+      //           onTap: () {
+      //             Navigator.push(
+      //               context,
+      //               MaterialPageRoute(
+      //                 builder: (context) => const GroupPageControll(),
+      //               ),
+      //             );
+      //           },
+      //           child: const Column(
+      //             children: [Icon(Icons.group), Text("모임")],
+      //           ),
+      //         ),
+      //       ),
+      //       Container(
+      //         height: double.infinity,
+      //         width: 2,
+      //         color: Colors.grey,
+      //       ),
+      //       //하단 버튼 3
+      //       Expanded(
+      //         child: GestureDetector(
+      //           onTap: () {
+      //             Navigator.push(
+      //               context,
+      //               MaterialPageRoute(
+      //                 builder: (context) => const TempScreen(),
+      //               ),
+      //             );
+      //           },
+      //           child: const Column(
+      //             children: [Icon(Icons.chat), Text("톡")],
+      //           ),
+      //         ),
+      //       ),
+      //       Container(
+      //         height: double.infinity,
+      //         width: 2,
+      //         color: Colors.grey,
+      //       ),
+      //       Expanded(
+      //         child: GestureDetector(
+      //           onTap: () {
+      //             Navigator.push(
+      //               context,
+      //               MaterialPageRoute(
+      //                 builder: (context) => const MyprofilePageController(),
+      //               ),
+      //             );
+      //           },
+      //           child: const Column(
+      //             children: [Icon(Icons.person), Text("내정보")],
+      //           ),
+      //         ),
+      //       ),
+      //     ],
+      //   ),
+      // ),
+    );
+  }
+}
+
+const List<Widget> _widgetList = <Widget>[
+  Home(),
+  GroupPageControll(),
+  TempScreen(),
+  MyprofilePageController(),
+];
+
+class Home extends StatelessWidget {
+  const Home({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10, left: 8, right: 8),
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.8,
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            //공지사항란
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                border: Border.all(width: 2),
+              ),
+              child: const Center(
+                child: Text(
+                  '공지사항',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            Container(
+              height: 100,
+              decoration: const BoxDecoration(
+                border: Border.symmetric(horizontal: BorderSide(width: 1)),
+                image: DecorationImage(
+                  fit: BoxFit.cover,
+                  image: AssetImage(
+                    'assets/독커.jpg',
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(
-                      15.0,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 15,
-                        spreadRadius: 5,
+                ),
+              ),
+              child: const Center(
+                child: Text("공지사항란"),
+              ),
+            ),
+            const SizedBox(
+                height: 40,
+                child: Center(
+                    child: Text(
+                  "내모임",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ))),
+            Container(
+              decoration: const BoxDecoration(
+                border: Border.symmetric(horizontal: BorderSide(width: 1)),
+              ),
+              height: 200,
+              child: Text('내정모 모음'),
+              //내모임 정모 모음
+              // child: StreamBuilder(stream: FirebaseFirestore.instance
+              // .collection('')
+              // , builder: builder)
+            ),
+            // Container(
+            //   color: Colors.grey,
+            //   height: 10,
+            // ),
+            Container(
+                decoration: const BoxDecoration(
+                    border: Border.symmetric(horizontal: BorderSide(width: 1))),
+                height: 40,
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton.icon(
+                          onPressed: () {},
+                          icon: const Icon(Icons.search),
+                          label: const Text("모임찾기")),
+                      const Text(
+                        "추천모임목록",
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
                       ),
-                    ],
-                  ),
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.only(bottom: 20),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  isSignupScreen = false;
-                                });
-                              },
-                              child: Column(
-                                children: [
-                                  Text(
-                                    "로그인",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: !isSignupScreen
-                                          ? Palette.activeColor
-                                          : Palette.textColor1,
-                                    ),
-                                  ),
-                                  if (!isSignupScreen)
-                                    Container(
-                                      margin: const EdgeInsets.only(top: 3),
-                                      height: 2,
-                                      width: 55,
-                                      color: Colors.orange,
-                                    ),
-                                ],
-                              ),
+                      TextButton.icon(
+                          onPressed: () {},
+                          icon: const Icon(Icons.create),
+                          label: const Text("모임만들기")),
+                    ])),
+            SizedBox(
+              height: 200,
+              child: ListView.builder(
+                shrinkWrap: true,
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, index) =>
+                    ContainerElements2(index: index),
+                itemCount: 20,
+              ),
+            ),
+            Container(
+                decoration: const BoxDecoration(
+                    border: Border.symmetric(horizontal: BorderSide(width: 1))),
+                height: 40,
+                child: const Center(
+                    child: Text(
+                  "정모목록",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ))),
+            SizedBox(
+              height: 200,
+              child: Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: ListView(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Column(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(width: 0.1),
+                              borderRadius: BorderRadius.circular(30),
+                              color: Colors.amber,
                             ),
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  isSignupScreen = true;
-                                });
-                              },
-                              child: Column(
-                                children: [
-                                  Column(
-                                    children: [
-                                      Text(
-                                        "회원가입",
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: !isSignupScreen
-                                              ? Palette.textColor1
-                                              : Palette.activeColor,
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        width: 15,
-                                      ),
-                                      if (isSignupScreen)
-                                        GestureDetector(
-                                          onTap: () {
-                                            showAlert(context);
-                                          },
-                                          child: Icon(
-                                            Icons.image,
-                                            color: isSignupScreen
-                                                ? Colors.cyan
-                                                : Colors.grey[300],
-                                          ),
-                                        ),
-                                      if (isSignupScreen)
-                                        Container(
-                                          margin: const EdgeInsets.fromLTRB(
-                                              0, 3, 35, 0),
-                                          height: 2,
-                                          width: 55,
-                                          color: Colors.orange,
-                                        ),
-                                    ],
-                                  ),
-                                ],
+                            width: 100,
+                            height: 100,
+                          ),
+                          const SizedBox(
+                            height: 50,
+                            child: Text("정모"),
+                          )
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Column(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(width: 0.1),
+                              borderRadius: BorderRadius.circular(30),
+                              color: Colors.amber,
+                            ),
+                            width: 100,
+                            height: 100,
+                          ),
+                          const SizedBox(
+                            height: 50,
+                            child: Text("정모"),
+                          )
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Column(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(width: 0.1),
+                              borderRadius: BorderRadius.circular(30),
+                              color: Colors.amber,
+                            ),
+                            width: 100,
+                            height: 100,
+                          ),
+                          const SizedBox(
+                            height: 50,
+                            child: Text("정모"),
+                          )
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Column(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(width: 0.1),
+                              borderRadius: BorderRadius.circular(30),
+                              color: Colors.amber,
+                            ),
+                            width: 100,
+                            height: 100,
+                          ),
+                          const SizedBox(
+                            height: 50,
+                            child: Text("정모"),
+                          )
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 200,
+                      child: Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(width: 0.1),
+                                borderRadius: BorderRadius.circular(30),
+                                color: Colors.amber,
                               ),
+                              width: 100,
+                              height: 100,
+                            ),
+                            const SizedBox(
+                              height: 50,
+                              child: Text("정모"),
                             )
                           ],
                         ),
-                        //입력필드 시작~
-                        if (isSignupScreen)
-                          Container(
-                            margin: const EdgeInsets.only(
-                              top: 20,
-                            ),
-                            child: Form(
-                              key: _formKey,
-                              child: Column(
-                                children: [
-                                  TextFormField(
-                                    key: const ValueKey(1),
-                                    validator: (value) {
-                                      if (value!.isEmpty || value.length < 4) {
-                                        return "4글자 이상 입력해주세요";
-                                      }
-                                      return null;
-                                    },
-                                    onSaved: (value) {
-                                      userName = value!;
-                                    },
-                                    onChanged: (value) {
-                                      userName = value;
-                                    },
-                                    decoration: const InputDecoration(
-                                      prefixIcon: Icon(
-                                        Icons.account_circle,
-                                        color: Palette.iconColor,
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Palette.textColor1,
-                                        ),
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(
-                                            35.0,
-                                          ),
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Palette.textColor1,
-                                        ),
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(
-                                            35.0,
-                                          ),
-                                        ),
-                                      ),
-                                      hintText: "이름",
-                                      hintStyle: TextStyle(
-                                        fontSize: 14,
-                                        color: Palette.textColor1,
-                                      ),
-                                      contentPadding: EdgeInsets.all(
-                                        10,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    height: 8,
-                                  ),
-                                  TextFormField(
-                                    keyboardType: TextInputType.emailAddress,
-                                    key: const ValueKey(2),
-                                    validator: (value) {
-                                      if (value!.isEmpty ||
-                                          !value.contains('@')) {
-                                        return "이메일 형식으로 기입해주세요";
-                                      }
-                                      return null;
-                                    },
-                                    onSaved: (value) {
-                                      userEmail = value!;
-                                    },
-                                    onChanged: (value) {
-                                      userEmail = value;
-                                    },
-                                    decoration: const InputDecoration(
-                                      prefixIcon: Icon(
-                                        Icons.email_outlined,
-                                        color: Palette.iconColor,
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Palette.textColor1,
-                                        ),
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(
-                                            35.0,
-                                          ),
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Palette.textColor1,
-                                        ),
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(
-                                            35.0,
-                                          ),
-                                        ),
-                                      ),
-                                      hintText: "이메일",
-                                      hintStyle: TextStyle(
-                                        fontSize: 14,
-                                        color: Palette.textColor1,
-                                      ),
-                                      contentPadding: EdgeInsets.all(
-                                        10,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    height: 8,
-                                  ),
-                                  TextFormField(
-                                    obscureText: true,
-                                    key: const ValueKey(3),
-                                    validator: (value) {
-                                      if (value!.isEmpty || value.length < 6) {
-                                        return "비밀번호는 최소 7자입니다.";
-                                      }
-                                      return null;
-                                    },
-                                    onSaved: (value) {
-                                      userPassword = value!;
-                                    },
-                                    onChanged: (value) {
-                                      userPassword = value;
-                                    },
-                                    decoration: const InputDecoration(
-                                      prefixIcon: Icon(
-                                        Icons.lock,
-                                        color: Palette.iconColor,
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Palette.textColor1,
-                                        ),
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(
-                                            35.0,
-                                          ),
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Palette.textColor1,
-                                        ),
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(
-                                            35.0,
-                                          ),
-                                        ),
-                                      ),
-                                      hintText: "비밀번호(최소7자)",
-                                      hintStyle: TextStyle(
-                                        fontSize: 14,
-                                        color: Palette.textColor1,
-                                      ),
-                                      contentPadding: EdgeInsets.all(
-                                        10,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        //로그인 textfield 2개
-                        if (!isSignupScreen)
-                          Container(
-                            margin: const EdgeInsets.only(top: 20),
-                            child: Form(
-                              key: _formKey,
-                              child: Column(
-                                children: [
-                                  TextFormField(
-                                    keyboardType: TextInputType.emailAddress,
-                                    key: const ValueKey(4),
-                                    validator: (value) {
-                                      if (value!.isEmpty ||
-                                          !value.contains('@')) {
-                                        return "이메일 형식으로 넣어주세요";
-                                      }
-                                      return null;
-                                    },
-                                    onSaved: (value) {
-                                      userEmail = value!;
-                                    },
-                                    onChanged: (value) {
-                                      userEmail = value;
-                                    },
-                                    decoration: const InputDecoration(
-                                      prefixIcon: Icon(
-                                        Icons.email_outlined,
-                                        color: Palette.iconColor,
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Palette.textColor1,
-                                        ),
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(
-                                            35.0,
-                                          ),
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Palette.textColor1,
-                                        ),
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(
-                                            35.0,
-                                          ),
-                                        ),
-                                      ),
-                                      hintText: "이메일",
-                                      hintStyle: TextStyle(
-                                        fontSize: 14,
-                                        color: Palette.textColor1,
-                                      ),
-                                      contentPadding: EdgeInsets.all(
-                                        10,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    height: 8,
-                                  ),
-                                  TextFormField(
-                                    obscureText: true,
-                                    key: const ValueKey(5),
-                                    validator: (value) {
-                                      if (value!.isEmpty || value.length < 6) {
-                                        return "비밀번호는 최소 7자리 입니다";
-                                      }
-                                      return null;
-                                    },
-                                    onSaved: (value) {
-                                      userPassword = value!;
-                                    },
-                                    onChanged: (value) {
-                                      userPassword = value;
-                                    },
-                                    decoration: const InputDecoration(
-                                      prefixIcon: Icon(
-                                        Icons.lock,
-                                        color: Palette.iconColor,
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Palette.textColor1,
-                                        ),
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(
-                                            35.0,
-                                          ),
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Palette.textColor1,
-                                        ),
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(
-                                            35.0,
-                                          ),
-                                        ),
-                                      ),
-                                      hintText: "비밀번호(최소7자)",
-                                      hintStyle: TextStyle(
-                                        fontSize: 14,
-                                        color: Palette.textColor1,
-                                      ),
-                                      contentPadding: EdgeInsets.all(
-                                        10,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              //전송버튼
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.easeIn,
-                top: isSignupScreen ? 440 : 390,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Container(
-                    height: 90,
-                    width: 90,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(
-                        50,
                       ),
-                    ),
-                    child: GestureDetector(
-                      onTap: () async {
-                        setState(() {
-                          showSpinner = true;
-                        });
-
-                        if (isSignupScreen) {
-                          if (userPickedImage == null) {
-                            setState(() {
-                              showSpinner = false;
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('사진을 골라주세요'),
-                                  backgroundColor: Colors.blue),
-                            );
-                            return;
-                          }
-                          _tryValidation();
-                        }
-                        try {
-                          final newUser = await _authentication
-                              .createUserWithEmailAndPassword(
-                            email: userEmail,
-                            password: userPassword,
-                          );
-                          final refImage = FirebaseStorage.instance
-                              .ref()
-                              .child('picked_image')
-                              .child('${newUser.user!.uid}.png');
-                          await refImage.putFile(userPickedImage!);
-                          final url = await refImage.getDownloadURL();
-
-                          await FirebaseFirestore.instance
-                              .collection('user')
-                              .doc(newUser.user!.uid)
-                              .set({
-                            'userName': userName,
-                            'email': userEmail,
-                            'picked_image': url
-                          });
-
-                          if (newUser.user != null) {
-                            // Navigator.push(
-                            //   context,
-                            //   MaterialPageRoute(
-                            //     builder: (context) {
-                            //       return const ChatScreen();
-                            //     },
-                            //   ),
-                            // );
-                            setState(() {
-                              showSpinner = false;
-                            });
-                          }
-                        } catch (e) {
-                          if (kDebugMode) {
-                            print(e);
-                          }
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('이메일과 비밀번호를 한번 더 체크해주세요'),
-                                backgroundColor: Colors.blue,
-                              ),
-                            );
-                          }
-                        }
-                        if (!isSignupScreen) {
-                          _tryValidation();
-
-                          try {
-                            final newUser = await _authentication
-                                .signInWithEmailAndPassword(
-                              email: userEmail,
-                              password: userPassword,
-                            );
-                            if (mounted) {
-                              if (newUser.user != null) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) {
-                                      return const MainScreen2();
-                                    },
-                                  ),
-                                );
-                              }
-                              setState(() {
-                                showSpinner = false;
-                              });
-                            }
-                          } catch (e) {
-                            if (kDebugMode) {
-                              print(e);
-                            }
-                          }
-                        }
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.all(15),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [
-                              Colors.orange,
-                              Colors.red,
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(
-                            50,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(
-                                0.3,
-                              ),
-                              spreadRadius: 2,
-                              blurRadius: 2,
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.arrow_forward,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              //웰컴 ~ 컨티뉴
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(padding: EdgeInsets.all(50)),
-                  RichText(
-                    text: TextSpan(
-                      text: "    Welcome",
-                      style: const TextStyle(
-                        letterSpacing: 1.0,
-                        fontSize: 25,
-                        color: Colors.white,
-                      ),
-                      children: [
-                        TextSpan(
-                          text: isSignupScreen
-                              ? " to Miyon talk!!"
-                              : " to Hyeongyu talk!",
-                          style: const TextStyle(
-                            letterSpacing: 1.0,
-                            fontSize: 25,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    isSignupScreen ? "       회원가입하기!" : "       로그인하기!",
-                    style: const TextStyle(
-                      letterSpacing: 1.0,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 50,
-                  ),
-                ],
-              ),
-              //구글 추가 싸인업
-
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.easeIn,
-                top: isSignupScreen
-                    ? MediaQuery.of(context).size.height - 125
-                    : MediaQuery.of(context).size.height - 165,
-                right: 0,
-                left: 0,
-                child: Column(
-                  children: [
-                    Text(
-                      isSignupScreen ? "or 구글로 로그인(개발중)" : "or 구글로 회원가입(개발중)",
-                    ),
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    TextButton.icon(
-                      onPressed: () {},
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size(155, 40),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        backgroundColor: Palette.googleColor,
-                      ),
-                      icon: const Icon(Icons.add),
-                      label: const Text("Google"),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
+            )
+          ],
         ),
       ),
+    );
+  }
+}
+
+class ContainerElements extends StatelessWidget {
+  final int index;
+  const ContainerElements({super.key, required this.index});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: Container(
+          decoration: BoxDecoration(
+              color: Colors.black26, borderRadius: BorderRadius.circular(10)),
+          height: 100,
+          child: IntrinsicHeight(
+              child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '$index : ',
+                style: const TextStyle(fontSize: 20, color: Colors.white),
+              ),
+              Text(
+                index % 2 == 0 ? "게시글1" : "게시글2",
+                style: const TextStyle(fontSize: 20, color: Colors.white),
+              ),
+            ],
+          ))),
+    );
+  }
+}
+
+class ContainerElements2 extends StatelessWidget {
+  final int index;
+  const ContainerElements2({super.key, required this.index});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: Container(
+          decoration: BoxDecoration(
+              border: Border.all(width: 1, color: PRIMATY_COLOR),
+              borderRadius: BorderRadius.circular(20)),
+          height: 100,
+          child: IntrinsicHeight(
+              child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '$index : ',
+                style: const TextStyle(fontSize: 20, color: Colors.black),
+              ),
+              Text(
+                index % 2 == 0 ? "모임1" : "모임2",
+                style: const TextStyle(fontSize: 20, color: Colors.black),
+              ),
+            ],
+          ))),
     );
   }
 }
