@@ -23,13 +23,15 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       title: "독서 한잔,커피 한잔",
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.pink,
+        useMaterial3: true,
+        fontFamily: 'SOYO',
       ),
       home: StreamBuilder(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return const MainScreen2();
+            return const LoginedScreen();
           }
           return const LoginSingUpScreen();
         },

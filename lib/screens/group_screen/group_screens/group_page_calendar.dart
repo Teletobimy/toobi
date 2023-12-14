@@ -120,16 +120,6 @@ class _GroupCalanderState extends State<GroupCalander> {
             color: Colors.grey,
             child: const Text("---------------"),
           ),
-          // Expanded(
-          //   child: ListView.builder(
-          //       itemCount: events.length,
-          //       itemBuilder: (BuildContext context, int index) => ScheduleCard(
-          //             startTime: DateTime.april,
-          //             endTime: DateTime.august,
-          //             content: 'test모드, 이곳에 일정을 넣습니다',
-          //             index: index + 1,
-          //           )),
-          // )
           Expanded(
             child: StreamBuilder(
               stream: FirebaseFirestore.instance
@@ -201,8 +191,8 @@ class ScheduleCard extends StatelessWidget {
       {Key? key})
       : super(key: key);
 
-  final int startTime;
-  final int endTime;
+  final Timestamp startTime;
+  final Timestamp endTime;
   final String content;
   final int index;
 
@@ -319,25 +309,27 @@ class _Time extends StatelessWidget {
     required this.startTime,
     required this.endTime,
   });
-  final int startTime;
-  final int endTime;
+  final Timestamp startTime;
+  final Timestamp endTime;
 
   @override
   Widget build(BuildContext context) {
     const textStyle1 = TextStyle(
       fontWeight: FontWeight.w600,
       color: PRIMATY_COLOR,
-      fontSize: 16.0,
+      fontSize: 14.0,
     );
-
+    DateTime startTime2 = startTime.toDate();
+    DateTime endTime2 = endTime.toDate();
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '${startTime.toString().padLeft(2, '0')}:00',
+          '${startTime2.year}-${startTime2.month}-${startTime2.day} ${startTime2.hour}-${startTime2.minute}',
           style: textStyle1,
         ),
         Text(
-          '${endTime.toString().padLeft(2, '0')}:00',
+          '${endTime2.year}-${endTime2.month}-${endTime2.day} ${endTime2.hour}-${endTime2.minute}',
           style: textStyle1.copyWith(
             fontSize: 12,
           ),
@@ -362,9 +354,9 @@ class _Content extends StatelessWidget {
 }
 
 class AddBottomSheet extends StatefulWidget {
-  DateTime? selectedDay;
-  DateTime? focusedDay;
-  AddBottomSheet({super.key, this.selectedDay, this.focusedDay});
+  final DateTime? selectedDay;
+  final DateTime? focusedDay;
+  const AddBottomSheet({super.key, this.selectedDay, this.focusedDay});
 
   @override
   State<AddBottomSheet> createState() => _AddBottomSheetState();

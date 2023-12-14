@@ -18,67 +18,6 @@ class _CalendarState extends State<GroupPageControll> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   backgroundColor: PRIMATY_COLOR,
-      //   toolbarHeight: 40,
-      //   title: const Text("📚독서 한잔, 커피 한잔☕ "),
-      //   centerTitle: true,
-      //   // backgroundColor: TitleColor1,
-      //   leading: Builder(
-      //       builder: (BuildContext context) => IconButton(
-      //           tooltip: "북쉐어링",
-      //           onPressed: () {
-      //             Scaffold.of(context).openDrawer();
-      //           },
-      //           icon: const Icon(Icons.menu_book_sharp))),
-      //   actions: [
-      //     IconButton(
-      //       onPressed: () => Navigator.pushAndRemoveUntil(
-      //         context,
-      //         MaterialPageRoute(
-      //           builder: (context) => const MainScreen2(),
-      //         ),
-      //         (route) => false,
-      //       ),
-      //       icon: const Icon(Icons.home),
-      //       style: ButtonStyle(iconSize: MaterialStateProperty.all(30)),
-      //     ),
-      //     const SizedBox(
-      //       width: 13,
-      //     )
-      //   ],
-      // ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: TitleColor1,
-              ),
-              child: const Text(
-                'Drawer Header2',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            const ListTile(
-              leading: Icon(Icons.message),
-              title: Text('Messages2'),
-            ),
-            const ListTile(
-              leading: Icon(Icons.account_circle),
-              title: Text('Profile2'),
-            ),
-            const ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Settings2'),
-            ),
-          ],
-        ),
-      ),
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[

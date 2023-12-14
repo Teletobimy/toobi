@@ -36,7 +36,7 @@ class TempScreen extends StatelessWidget {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const MainScreen2(),
+                      builder: (context) => const LoginedScreen(),
                     ),
                     (route) => false,
                   );

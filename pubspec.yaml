@@ -22,6 +22,9 @@ dependencies:
   table_calendar: ^3.0.9
   animations: ^2.0.8
   adaptive_components: ^0.0.9
+  image_cropper: ^5.0.1
+  path_provider: ^2.1.1
+  numberpicker: ^2.1.2
 
 dev_dependencies:
   flutter_test:
@@ -32,3 +35,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+  fonts:
+    - family: SOYO
+      fonts:
+      - asset: assets/fonts/SOYO Maple Regular.ttf
+      - asset: assets/fonts/SOYO Maple Bold.ttf
