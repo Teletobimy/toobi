@@ -104,14 +104,12 @@ class _GroupRegisterState extends State<GroupRegister> {
                   onPressed: () async {
                     _addEventToFirestore();
                     groupTitle.clear();
-                    Navigator.of(context).pop();
                   },
                   child: Text('가입'),
                 ),
                 ElevatedButton(
                   onPressed: () {
                     groupTitle.clear();
-                    Navigator.of(context).pop(); // 다이얼로그 닫기
                   },
                   child: Text('취소'),
                 ),
