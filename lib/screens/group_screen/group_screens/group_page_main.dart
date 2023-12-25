@@ -30,9 +30,13 @@ class _GroupMainPageState extends State<GroupMainPage> {
     if (user != null) {
       DocumentSnapshot<Map<String, dynamic>> snapshot =
           await _firestore.collection('user').doc(user.uid).get();
+
+      Map<String, dynamic> map = snapshot["myMoimList"];
+
       setState(() {
-        userData = Future.value(snapshot);
-        moimID = snapshot.data()?['myMoimList'][0];
+        moimID = map.keys.first;
+        print(map.keys.first.toString());
+        print(moimID);
       });
     }
   }
@@ -40,7 +44,7 @@ class _GroupMainPageState extends State<GroupMainPage> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<DocumentSnapshot>(
-      future: _firestore.collection('Moim').doc(moimID).get(),
+      future: _firestore.collection('moim').doc(moimID).get(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(

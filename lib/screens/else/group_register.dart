@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -129,14 +131,65 @@ class _GroupRegisterState extends State<GroupRegister> {
     DateTime now = DateTime.now();
     FirebaseAuth auth = FirebaseAuth.instance;
     User? user = auth.currentUser;
-    String uid = "";
+
     int point = 0;
-    List<String> moimList = [];
+
     List<String> moimSchedule = [];
 
     if (user != null) {
-      uid = user.uid;
-      moimList.add(uid);
+      DocumentSnapshot<Map<String, dynamic>> data = await FirebaseFirestore
+          .instance
+          .collection("user")
+          .doc(user.uid)
+          .get();
+      String name = data["userName"];
+
+      print("id : ${user.uid} 이름 : $name");
+      Map<String, String> map = {user.uid: name};
+      if (moimTitle.isNotEmpty && moimLocation.isNotEmpty && map.isNotEmpty) {
+        String generateRandomId(int length) {
+          const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+          final random = Random();
+          return String.fromCharCodes(Iterable.generate(
+            length,
+            (_) => chars.codeUnitAt(random.nextInt(chars.length)),
+          ));
+        }
+
+        String randomeID = generateRandomId(20);
+
+        try {
+          await FirebaseFirestore.instance
+              .collection('moim')
+              .doc(randomeID)
+              .set({
+            'moimTitle': moimTitle,
+            'moimLocation': moimLocation,
+            "moimIntroduction": "",
+            'moimLimit': moimLimit,
+            'createdTime': now,
+            "moimJang": map,
+            "oonYoungJin": map,
+            "moimPoint": point,
+            "boardID": DateTime.now().millisecondsSinceEpoch,
+            "moimMembers": map,
+            "moimScheule": moimSchedule,
+          });
+
+          await FirebaseFirestore.instance
+              .collection('user')
+              .doc(user.uid)
+              .update({
+            'myMoimList.$randomeID': moimTitle,
+          });
+          print('모임이 성공적으로 추가되었습니다!');
+          // 추가되었으니 필요한 다른 작업을 수행하거나 화면을 닫을 수 있습니다.
+        } catch (e) {
+          print('모임 추가 중 오류가 발생했습니다: $e');
+        }
+      } else {
+        print('유효한 정보를 입력하세요.');
+      }
     } else {
       auth.signOut().then((_) {
         Navigator.pushReplacement(
@@ -144,30 +197,6 @@ class _GroupRegisterState extends State<GroupRegister> {
           MaterialPageRoute(builder: (context) => LoginSingUpScreen()),
         );
       });
-    }
-
-    if (moimTitle.isNotEmpty && moimLocation.isNotEmpty) {
-      try {
-        await FirebaseFirestore.instance.collection('Moim').add({
-          'moimTitle': moimTitle,
-          'moimLocation': moimLocation,
-          "moimIntroduction": "",
-          'moimLimit': moimLimit,
-          'createdTime': now,
-          "moimJang": uid,
-          "oonYoungJin": "",
-          "moimPoint": point,
-          "boardID": DateTime.now().millisecondsSinceEpoch,
-          "moimMembers": moimList,
-          "moimScheule": moimSchedule,
-        });
-        print('모임이 성공적으로 추가되었습니다!');
-        // 추가되었으니 필요한 다른 작업을 수행하거나 화면을 닫을 수 있습니다.
-      } catch (e) {
-        print('모임 추가 중 오류가 발생했습니다: $e');
-      }
-    } else {
-      print('유효한 정보를 입력하세요.');
     }
   }
 
