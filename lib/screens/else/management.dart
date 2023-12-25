@@ -21,6 +21,18 @@ Future<List<Map<String, dynamic>>> fetchAllMeetingsData() async {
       String moimLocation = doc.get('moimLocation');
       int moimLimit = doc.get('moimLimit');
 
+// boardID 1702466067006 (번호)
+// createdTime 2023년 12월 13일 오후 8시 14분 26초 UTC+9 (타임스탬프)
+// moimIntroduction "" (문자열)
+// moimJang"XBiOoTEngGM1Df5xv3CBiRq0vfb2"(문자열)
+// moimLimit 50 (번호)
+// moimLocation"온라인"(문자열)
+// moimMembers(배열)0"XBiOoTEngGM1Df5xv3CBiRq0vfb2"(문자열)
+// moimPoint0(번호)
+// moimScheule(배열)
+// moimTitle"독서한잔 커피두잔"(문자열)
+// oonYoungJin
+
       // 모임 데이터를 Map으로 생성하여 리스트에 추가
       Map<String, dynamic> moimData = {
         'moimTitle': moimTitle,

@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "148924494897",
-    "project_id": "coffeereading-46e7f",
-    "storage_bucket": "coffeereading-46e7f.appspot.com"
+    "project_number": "832909857631",
+    "project_id": "coffeereadingbook",
+    "storage_bucket": "coffeereadingbook.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:148924494897:android:b43efbc15eb6a032849110",
+        "mobilesdk_app_id": "1:832909857631:android:08db18c0f10cced1a99cea",
         "android_client_info": {
           "package_name": "com.example.test01"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAv2lqHCEZWZ5yVTuEAoiS2VjLstzRix-M"
+          "current_key": "AIzaSyBKEgCHEAcVLPzzbaDSxSCZ64-CGH-FbbA"
         }
       ],
       "services": {

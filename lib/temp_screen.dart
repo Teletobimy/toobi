@@ -10,20 +10,6 @@ class TempScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   // backgroundColor: Colors.grey[400],
-      //   toolbarHeight: 32,
-      //   title: const Text("📚독서 한잔, 커피 한잔☕ "),
-      //   centerTitle: true,
-      //   backgroundColor: PRIMATY_COLOR,
-      //   leading: Builder(
-      //       builder: (BuildContext context) => IconButton(
-      //           tooltip: "북쉐어링",
-      //           onPressed: () {
-      //             Scaffold.of(context).openDrawer();
-      //           },
-      //           icon: const Icon(Icons.menu_book_sharp))),
-      // ),
       body: const Text("전체 채팅 화면"),
       bottomNavigationBar: BottomAppBar(
         height: 69,
